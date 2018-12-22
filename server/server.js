@@ -37,6 +37,12 @@ app.post('/todos',(req,res)=>{
   })
 })
 
+app.get('/todos', (req,res)=>{
+  Todo.find().then((response)=>{
+    res.send(response)
+  })
+})
+
 
 
 
