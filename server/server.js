@@ -43,6 +43,23 @@ app.get('/todos', (req,res)=>{
   })
 })
 
+app.delete('/todos/:id',(req,res)=>{
+  var id = req.params.id;
+  if(!ObjectID.isValid(id)){
+    return res.status(404).send('Invalid id')
+  }
+  Todo.findByIdAndDelete(id).then((doc)=>{
+    if(doc==null){return res.status(404).send('item not found'+doc)}
+    res.status(200).send('Item was deleted')
+  },
+    (e)=>{
+      res.status(404).send('object wasnt deleted')
+    }
+  )
+    
+    
+})
+
 
 
 
