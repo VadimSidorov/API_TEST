@@ -36,7 +36,11 @@ const todos = [{
   },{
     _id:user2ID,
     email:'vadim2@gmail.com',
-    password:'123abc'
+    password:'123abc',
+    tokens:[{
+      access:'auth',
+      token: jwt.sign({_id: user2ID, access:'auth'}, 'abc123').toString()
+  }]
   }]
 
   const populateUsers = (done)=>{
