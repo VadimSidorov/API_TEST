@@ -9,15 +9,17 @@ var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 var {authenticate} = require('./middleware/authenticate');
+const bcrypt = require('bcryptjs')
 
 var app = express();
 const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post('/todos', (req, res) => {
+app.post('/todos',authenticate, (req, res) => {
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    _creator:req.user._id
   });
 
   todo.save().then((doc) => {
@@ -28,8 +30,10 @@ app.post('/todos', (req, res) => {
 });
 
 
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id
+  }).then((todos) => {
     res.send({todos});
   }, (e) => {
     res.status(400).send(e);
@@ -112,6 +116,27 @@ app.post('/users', (req, res) => {
   })
 });
 
+//POST /users/login
+
+app.post('/users/login',(req,res)=>{
+  var body = _.pick(req.body, ['email', 'password']);
+
+  User.findByCredentials(body.email, body.password).then((user)=>{
+    return user.generateAuthToken().then((token)=>{
+      res.header('x-auth', token).send(user);
+    })
+  }).catch((e)=>{
+    res.status(400).send(e)
+  })
+})
+
+app.delete('/users/me/token',authenticate,(req,res)=>{
+  req.user.removeToken(req.token).then(()=>{
+    res.status(200).send();
+  }, ()=>{
+    res.status(400).send()
+  })
+})
 
 
 app.get('/users/me',authenticate, (req,res)=>{
